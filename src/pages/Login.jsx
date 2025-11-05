@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { authenticateUser } from '../services/auth';
+import { toast } from 'react-toastify';
 
 function Login() {
   const [login, setLogin] = useState('');
@@ -14,18 +15,23 @@ function Login() {
     setError('');
     setLoading(true);
 
-    // Simular delay de rede
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const user = authenticateUser(login, password);
-    
-    if (user) {
-      loginUser(user);
-    } else {
-      setError('Login ou senha incorretos');
+    try {
+      const user = await authenticateUser(login, password);
+      
+      if (user) {
+        toast.success(`Bem-vindo, ${user.nome || user.login}! 🚀`);
+        loginUser(user);
+      } else {
+        toast.error('Login ou senha incorretos 🚫');
+        setError('Login ou senha incorretos');
+      }
+    } catch (err) {
+      console.error('Erro no login:', err);
+      toast.error('Erro ao fazer login. Tente novamente. ⚠️');
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (

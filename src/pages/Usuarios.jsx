@@ -1,23 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchUsers } from '../services/users';
+import { toast } from 'react-toastify';
 
 function Usuarios() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Usuários mockados para demonstração
-  const usuarios = [
-    {
-      id: 1,
-      login: 'andrefelipe',
-      nome: 'André Felipe',
-      email: 'andre@luminaris.ai',
-      hierarquia: 1,
-      nivel: 'Master',
-      status: 'Ativo',
-      ultimoAcesso: '2025-11-05 20:30'
+  // Carregar usuários da API
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Debug: verificar o valor da hierarquia
+      console.log('Usuário logado:', user);
+      console.log('ID:', user?.id, 'Nível:', user?.nivel, 'Hierarquia:', user?.hierarquia);
+      
+      // Enviar o objeto user completo com id, nivel e hierarquia
+      if (!user || !user.id) {
+        throw new Error('Dados do usuário não encontrados. Faça login novamente.');
+      }
+      
+      const data = await fetchUsers(user);
+      setUsuarios(data);
+      toast.success(`${data.length} usuário(s) carregado(s) com sucesso! ✅`);
+    } catch (err) {
+      console.error('Erro ao carregar usuários:', err);
+      const errorMsg = err.message || 'Erro ao carregar usuários. Verifique se a API está rodando.';
+      setError(errorMsg);
+      toast.error(errorMsg + ' ⚠️');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Nunca';
+    const date = new Date(dateString);
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const filteredUsers = usuarios.filter(u =>
     u.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,7 +92,8 @@ function Usuarios() {
             placeholder="Buscar usuários..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-12 bg-gray-900/50 border border-luminaris-yellow/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-luminaris-yellow transition-colors"
+            disabled={loading}
+            className="w-full px-4 py-3 pl-12 bg-gray-900/50 border border-luminaris-yellow/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-luminaris-yellow transition-colors disabled:opacity-50"
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">🔍</span>
         </div>
@@ -68,6 +104,25 @@ function Usuarios() {
           <span>Novo Usuário</span>
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-500/10 border border-red-500/50 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">⚠️</span>
+            <div>
+              <h3 className="text-red-400 font-semibold mb-2">Erro ao carregar dados</h3>
+              <p className="text-gray-300 text-sm">{error}</p>
+              <button 
+                onClick={loadUsers}
+                className="mt-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors"
+              >
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -106,7 +161,15 @@ function Usuarios() {
 
       {/* Users Table */}
       <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl border border-luminaris-yellow/20 overflow-hidden">
-        <div className="overflow-x-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-luminaris-yellow mb-4"></div>
+              <p className="text-white text-lg">Carregando usuários...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-black/50 border-b border-luminaris-yellow/20">
               <tr>
@@ -155,7 +218,7 @@ function Usuarios() {
                         {usuario.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-400 text-sm">{usuario.ultimoAcesso}</td>
+                    <td className="px-6 py-4 text-gray-400 text-sm">{formatDate(usuario.ultimo_log)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button className="p-2 hover:bg-luminaris-yellow/10 rounded-lg transition-colors" title="Editar">
@@ -172,6 +235,7 @@ function Usuarios() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Info Card */}

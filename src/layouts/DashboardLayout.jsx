@@ -1,10 +1,16 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 function DashboardLayout() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleLogout = () => {
+    toast.info('Até logo! 👋');
+    logout();
+  };
 
   const menuItems = [
     {
@@ -49,7 +55,7 @@ function DashboardLayout() {
                 <p className="text-white font-semibold">{user?.nome || user?.login}</p>
               </div>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/30 transition-all duration-300 flex items-center gap-2"
               >
                 <span className="hidden sm:inline">Sair</span>
