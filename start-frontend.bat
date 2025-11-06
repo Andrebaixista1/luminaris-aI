@@ -1,0 +1,3 @@
+@echo off
+echo Starting Luminaris AI Frontend...
+npm.cmd run dev

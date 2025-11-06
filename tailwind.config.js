@@ -8,7 +8,10 @@ export default {
     extend: {
       colors: {
         'luminaris-yellow': '#FFD700',
+        'luminaris-gold': '#F59E0B',
         'luminaris-dark': '#1a1a1a',
+        'luminaris-light': '#F8FAFC',
+        'luminaris-gray': '#F1F5F9',
       },
       animation: {
         'float': 'float 3s ease-in-out infinite',

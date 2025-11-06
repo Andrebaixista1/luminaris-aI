@@ -1,0 +1,3 @@
+@echo off
+echo Starting Luminaris AI Backend API...
+npm.cmd run api

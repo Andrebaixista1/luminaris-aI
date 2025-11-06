@@ -1,4 +1,4 @@
-const API_URL = 'https://n8n.apivieiracred.store/webhook-test/get-users';
+const API_URL = 'https://n8n.apivieiracred.store/webhook/get-users';
 
 export const fetchUsers = async (user) => {
   try {
@@ -7,7 +7,8 @@ export const fetchUsers = async (user) => {
       id: user?.id || '',
       nivel: user?.nivel || '',
       hierarquia: user?.hierarquia || '',
-      empresa: user?.empresa || ''
+      empresa: user?.empresa || '',
+      empresa_id: user?.empresa_id || ''
     });
     
     const url = `${API_URL}?${params.toString()}`;
